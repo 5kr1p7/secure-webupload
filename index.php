@@ -13,6 +13,8 @@ $pass_l = 15;
 
 // Delete extension
 function StripEx($filename) {
+// TODO: Replace stupid symbols
+//	$ret = preg_replace('/[^a-zA-Zа-яА-Я0-9\(\)\[\]\.\- ]/', '', $filename);
 	return preg_replace('/\.[a-zA-Z0-9]*$/', '', $filename);
 }
 
