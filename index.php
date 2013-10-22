@@ -76,7 +76,11 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 </head>
 <body>
 	<div id="container">
-		<h1>Генератор защищенных ссылок</h1>
+		<div id="logo">
+			<a href="/sec/"><img src="sec_lock.png" /></a>
+			<h1>Генератор защищенных ссылок</h1>
+		</div>
+
 		<div id="uploader">
 <?php
 		// CHECK ACCESS ----------------------------------------------------------------------------
