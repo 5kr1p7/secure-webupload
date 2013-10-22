@@ -1,8 +1,15 @@
 body {
 	margin: 0px;
-	background-color: #000;
+	background-color: #222;
 	color: #ccc;
-	font: 14pt sans;
+	font: 14pt;
+}
+
+#logo {
+	text-align: center;
+	font-family: sans-serif;
+	margin-top: 20px;
+	margin-bottom: 50px;
 }
 
 #container {
@@ -50,7 +57,7 @@ a {
 
 .error-msg {
 	padding-top: 10px;
-	background-color: #555;
+	background-color: #444;
 	text-align: center;
 	color: #c00;
 	font: 16pt sans-serif;
@@ -59,7 +66,7 @@ a {
 
 .success-msg {
 	padding-top: 10px;
-	background-color: #555;
+	background-color: #444;
 	text-align: center;
 	color: #0c0;
 	font: 16pt sans-serif;
