@@ -11,16 +11,19 @@ $uploaddir = '/srv/ftp/www/secure/';
 $max_file_size = 15 * 1048576;			// Max file size (MB)
 $pass_l = 15;
 
+// Delete extension
 function StripEx($filename) {
 	return preg_replace('/\.[a-zA-Z0-9]*$/', '', $filename);
 }
 
 
 function RePack($arc, $pass) {
-	$ret = exec('7za a -t7z -p'. $pass .' -mhe=on "'. StripEx($arc) .'.7z" "' . $arc .'"');
-//	print_r($ret);
+	// Archiving file
+	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p'. $pass .' -mhe=on "'. StripEx($arc) .'.7z" "' . $arc .'"');
 
+	// If everything is ok - delete original file
 	if ( preg_match('/Ok/', $ret) ) {
+		unlink($arc);
 		return true;
 	} else {
 		return false;
@@ -95,7 +98,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			echo '<input onclick="this.select();" class="solid" readonly="readonly" style="width:100%" value="'.$sec_link.'"><br>'."\n";
 			echo '<br><center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>'."\n";
 			echo '<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>'."<br>\n";
-			echo '<div id="pass">Пароль на архив: ' . $arc_pass . "<br>\n";
+			echo '<div id="pass">Пароль на архив: <b>' . $arc_pass . "</b><br>\n";
 }
 // -------------------------------------------------------------------------------------------------
 ?>
