@@ -1,11 +1,12 @@
 <?php
-$debug = false;							// Debug flag
+$debug = true;							// Debug flag
 $rand = false;							// Generate random passwords?
 $pass_l = 15;
 
 // Reset vars
 $error = false;
 $message = "";
+$debug_info = array();
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
@@ -50,6 +51,10 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // UPLOAD PROCESS -----------------------------------------------------------------------------------
 		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
+		
+		if (file_exists($uploadfile)) {
+			echo "EXISTS!!!";
+		}
 
 		if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 			if($rand){
@@ -57,6 +62,8 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			} else {
 				$arc_pass = substr( filesize($uploadfile) . preg_replace('/[^0-9]/i', '', md5($uploadfile)), 0, $pass_l );
 			}
+			
+			if ($debug) { $debug_info["uploadfile"] = $uploadfile; $debug_info["pass"] = $arc_pass; }
 			
 			if (Repack($uploadfile, $arc_pass) ) {
 				$message = '<div class="success-msg">Файл корректен и был успешно загружен.</div>'."\n";
@@ -77,6 +84,8 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
 		$md5 = strtr($md5, '+/', '-_');
 		$md5 = str_replace('=', '', $md5);
+
+		if ($debug) { $debug_info["md5"] = $md5; $debug_info["expire"] = $expire; }
 // --------------------------------------------------------------------------------------------------
 	} else {
 		echo '<div class="error-msg">Некорректный ввод!</div>'."\n";
@@ -118,11 +127,12 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			<div id="links">
 <?php
 		// PRINT SECURE LINK AND EXPIRE DATE ---------------------------------------------------------------
-		if($debug) {
-			echo "Pass:		$arc_pass<br>\n";
-			echo "MD5:		$md5<br>\n";
-			echo "Expire:	$expire<br>\n";
-			echo "Error:	$error<br>\n";
+		if ($debug) {
+			echo 'File:		' . $debug_info["uploadfile"] . "<br>\n";
+			echo 'Pass:		' . $debug_info["pass"] .		"<br>\n";
+			echo 'MD5:		' . $debug_info["md5"] . 		"<br>\n";
+			echo 'Expire:	' . date('d.m.Y H:i:s', $debug_info["expire"]+14400) .		"<br>\n";
+			echo 'Error:	' . $debug_info["error"] .		"<br>\n";
 		}
 
 		if ($md5 && $expire && !$error) {
