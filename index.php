@@ -11,7 +11,8 @@ $file_info = array();
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
-$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+//$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+$allowed = true;
 // -------------------------------------------------------------------------------------------------
 
 setlocale(LC_CTYPE, 'ru_RU.UTF-8');		// For suppord non-en filenames
@@ -100,6 +101,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 	}
 }
 ?>
+<!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
@@ -113,7 +115,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		</div>
 		
 		<div id="logo">
-			<a href="/sec/"><img src="sec_lock.png" /></a>
+			<a href="/sec/"><img src="sec_lock.png" alt="Secure Link" /></a>
 			<h1>Генератор защищенных ссылок</h1>
 		</div>
 
