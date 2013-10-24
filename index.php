@@ -7,6 +7,7 @@ $pass_l = 15;
 $error = false;
 $message = "";
 $debug_info = array();
+$file_info = array();
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
@@ -15,12 +16,12 @@ $allowed = preg_match("/^192\.168\.1\..*$/", $ip);
 
 setlocale(LC_CTYPE, 'ru_RU.UTF-8');		// For suppord non-en filenames
 $secret = 'Rh47mf3';					// Salt
-$md5 = "";								// Clear md5 variable
+$md5 = '';								// Clear md5 variable
 $uploaddir = '/srv/ftp/www/secure/';
 $max_file_size = 15 * 1048576;			// Max file size (MB)
 
 function AddHashFilename($filename) {
-	return substr_replace($filename, rand(1000,9999).'-', 0, 0);
+	return substr_replace($filename, rand(10000,99999).'-', 0, 0);
 }
 
 // Generate Password
@@ -36,9 +37,9 @@ function StripEx($filename) {
 }
 
 // Pack to 7zip with password
-function RePack($arc, $pass) {
+function RePack($arc, $file, $pass) {
 	// Archiving file
-	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p' . $pass . ' -mhe=on "'. addslashes(StripEx($arc)) . '.7z" "' . addslashes($arc) . '"');
+	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p' . $pass . ' -mhe=on "'. addslashes(StripEx($file)) . '.7z" "' . addslashes($arc) . '"');
 
 	// If everything is ok - delete original file
 	if ( preg_match('/Ok/', $ret) ) {
@@ -54,8 +55,14 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 	if ($_FILES['userfile']['name'] && is_numeric($_POST['exp'])) {
 
 // UPLOAD PROCESS -----------------------------------------------------------------------------------
-		$hashed_filename = AddHashFilename(basename($_FILES['userfile']['name']));
-		$uploadfile = $uploaddir . $hashed_filename;
+		// Array with info
+		$file_info['filename_original']	= basename($_FILES['userfile']['name']);
+		$file_info['filename_hashed']	= AddHashFilename(basename($_FILES['userfile']['name']));
+		$file_info['filename_upload']	= $uploaddir . basename($_FILES['userfile']['name']);
+		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . '.7z';
+		// ------------------------------------------------------------------------------------------
+
+		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
 		
 		if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 			if($rand){
@@ -66,7 +73,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			
 			if ($debug) { $debug_info["uploadfile"] = $uploadfile; $debug_info["pass"] = $arc_pass; }
 			
-			if (Repack($uploadfile, $arc_pass) ) {
+			if (Repack($file_info['filename_upload'], $file_info['arc_upload_h'], $arc_pass) ) {
 				$message = '<div class="success-msg">Файл корректен и был успешно загружен.</div>'."\n";
 			} else {
 				$error = true;
@@ -79,7 +86,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // CREATE SECURE LINK -------------------------------------------------------------------------------
 //		$path = '/secure/'.$_FILES['userfile']['name'];
-		$path = '/secure/' . StripEx($hashed_filename) . '.7z';
+		$path = '/secure/' . StripEx($file_info['filename_hashed']) . '.7z';
 		$expire = time() + (86400 * $_POST['exp']);					// Calculate expire date
 		
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
