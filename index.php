@@ -1,5 +1,5 @@
 <?php
-$debug = true;							// Debug flag
+$debug = false;							// Debug flag
 $rand = false;							// Generate random passwords?
 $pass_l = 15;
 
@@ -19,6 +19,10 @@ $md5 = "";								// Clear md5 variable
 $uploaddir = '/srv/ftp/www/secure/';
 $max_file_size = 15 * 1048576;			// Max file size (MB)
 
+function AddHashFilename($filename) {
+	return substr_replace($filename, rand(1000,9999).'-', 0, 0);
+}
+
 // Generate Password
 function GenRandomPass($chars) {
 	return rand(pow(10, $chars-1),pow(10, $chars-1)*10-1);
@@ -34,7 +38,7 @@ function StripEx($filename) {
 // Pack to 7zip with password
 function RePack($arc, $pass) {
 	// Archiving file
-	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p'. $pass .' -mhe=on "'. addslashes(StripEx($arc)) .'.7z" "' . addslashes($arc) .'"');
+	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p' . $pass . ' -mhe=on "'. addslashes(StripEx($arc)) . '.7z" "' . addslashes($arc) . '"');
 
 	// If everything is ok - delete original file
 	if ( preg_match('/Ok/', $ret) ) {
@@ -50,12 +54,9 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 	if ($_FILES['userfile']['name'] && is_numeric($_POST['exp'])) {
 
 // UPLOAD PROCESS -----------------------------------------------------------------------------------
-		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
+		$hashed_filename = AddHashFilename(basename($_FILES['userfile']['name']));
+		$uploadfile = $uploaddir . $hashed_filename;
 		
-		if (file_exists($uploadfile)) {
-			echo "EXISTS!!!";
-		}
-
 		if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 			if($rand){
 				$arc_pass = GenRandomPass($pass_l);
@@ -78,7 +79,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // CREATE SECURE LINK -------------------------------------------------------------------------------
 //		$path = '/secure/'.$_FILES['userfile']['name'];
-		$path = '/secure/' . StripEx($_FILES['userfile']['name']) . '.7z';
+		$path = '/secure/' . StripEx($hashed_filename) . '.7z';
 		$expire = time() + (86400 * $_POST['exp']);					// Calculate expire date
 		
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
