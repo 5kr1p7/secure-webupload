@@ -6,6 +6,7 @@ $sfx = false;
 $uploaddir = '/srv/ftp/www/secure/';
 $max_file_size = 15 * 1048576;			// Max file size (MB)
 $secret = 'Rh47mf3';					// Salt
+$public = false;
 
 // Reset vars
 $error = false;
@@ -14,9 +15,12 @@ $debug_info = array();
 $file_info = array();
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
-$ip = $_SERVER['REMOTE_ADDR'];
-$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
-$allowed = true; // REMOVE!
+if (!$public) {
+	$ip = $_SERVER['REMOTE_ADDR'];
+	$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+} else {
+	$allowed = true;
+}
 // -------------------------------------------------------------------------------------------------
 
 setlocale(LC_CTYPE, 'ru_RU.UTF-8');		// For suppord non-en filenames
