@@ -97,6 +97,11 @@ h1 {
 }
 
 #pass b {
-	font: 20pt sans-serif;
-	color: #fff;
+	font-size: 1.5em;
+	margin: 15px 0 2px 0;
+	text-align: center;
+}
+
+.pass_block {
+	padding: 0 0.15em;
 }

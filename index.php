@@ -3,6 +3,9 @@ $debug = false;							// Debug flag
 $rand = true;							// Generate random passwords?
 $pass_l = 15;
 $sfx = false;
+$uploaddir = '/srv/ftp/www/secure/';
+$max_file_size = 15 * 1048576;			// Max file size (MB)
+$secret = 'Rh47mf3';					// Salt
 
 // Reset vars
 $error = false;
@@ -13,14 +16,25 @@ $file_info = array();
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
 $allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+$allowed = true; // REMOVE!
 // -------------------------------------------------------------------------------------------------
 
 setlocale(LC_CTYPE, 'ru_RU.UTF-8');		// For suppord non-en filenames
-$secret = 'Rh47mf3';					// Salt
 $md5 = '';								// Clear md5 variable
-$uploaddir = '/srv/ftp/www/secure/';
-$max_file_size = 15 * 1048576;			// Max file size (MB)
 
+// Formatting for password output
+function NicePassOutput($pass) {
+	$out = '';
+	$chunks = explode( "\n", rtrim(chunk_split($pass, 3)) );
+
+	foreach ($chunks as $pass_block) {
+		$out = $out . '<span class="pass_block">' . rtrim($pass_block)  . '</span>';
+	}
+
+	return $out;
+}
+
+// Add a numeric appendix to filename
 function AddHashFilename($filename) {
 	return substr_replace($filename, rand(10000,99999).'-', 0, 0);
 }
@@ -39,7 +53,6 @@ function StripEx($filename) {
 
 // Pack to 7zip with password
 function RePack($arc, $file, $pass) {
-	
 	global $file_info, $sfx;
 	$option = '';
 
@@ -167,7 +180,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 '				<input onclick="this.select();" style="width:392px" class="solid" readonly="readonly" value="'.$sec_link.'"><br><br>'."\n" . 
 '				<center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>'."\n" . 
 '				<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>'."<br>\n" . 
-'				<div id="pass">Пароль на архив: <b>' . $arc_pass . "</b></div>\n";
+'				<div id="pass">Пароль на архив: <b>' . NicePassOutput($arc_pass) . "</b></div>\n";
 		}
 // -------------------------------------------------------------------------------------------------
 ?>
