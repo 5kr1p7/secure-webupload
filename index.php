@@ -6,11 +6,9 @@ $sfx = false;
 
 // Reset vars
 $error = false;
-$message = "";
+$message = '';
 $debug_info = array();
 $file_info = array();
-if($sfx){ $ext = '.exe'; } else { $ext = '.7z'; }
-$option = '';
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
@@ -40,15 +38,17 @@ function StripEx($filename) {
 }
 
 // Pack to 7zip with password
-function RePack($arc, $file, $pass, $sfx) {
+function RePack($arc, $file, $pass) {
+	
+	global $file_info, $sfx;
+	$option = '';
+
 	// Archiving file
-	if ($sfx) {
+	if ($file_info['arc_sfx']) {
 		$option = '-sfx';
-		$ext = '.exe';
-	} else {
-		$ext = '.7z';
 	}
-	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a -p' . $pass . ' -mhe=on '. $option . ' "' . addslashes(StripEx($file)) . $ext . '" "' . addslashes($arc) . '"';
+
+	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a -p' . $pass . ' -mhe=on '. $option . ' "' . addslashes($file_info['arc_upload_h']) . '" "' . addslashes($file_info['filename_upload']) . '"';
 	$ret = exec($cmd);
 
 	// If everything is ok - delete original file
@@ -66,10 +66,17 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // UPLOAD PROCESS -----------------------------------------------------------------------------------
 		// Array with info
+		if ($sfx) {
+			$file_info['arc_ext'] = '.exe';
+		} else {
+			$file_info['arc_ext'] = '.7z';
+		}
+
+		$file_info['arc_sfx'] = $sfx;
 		$file_info['filename_original']	= basename($_FILES['userfile']['name']);
 		$file_info['filename_hashed']	= AddHashFilename(basename($_FILES['userfile']['name']));
 		$file_info['filename_upload']	= $uploaddir . basename($_FILES['userfile']['name']);
-		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . '.7z';
+		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];
 		// ------------------------------------------------------------------------------------------
 
 		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
@@ -83,7 +90,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			
 			if ($debug) { $debug_info["uploadfile"] = $uploadfile; $debug_info["pass"] = $arc_pass; }
 			
-			if (Repack($file_info['filename_upload'], $file_info['arc_upload_h'], $arc_pass, $sfx) ) {
+			if (Repack($file_info['filename_upload'], $file_info['arc_upload_h'], $arc_pass) ) {
 				$message = '<div class="success-msg">Файл корректен и был успешно загружен.</div>'."\n";
 			} else {
 				$error = true;
@@ -96,7 +103,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // CREATE SECURE LINK -------------------------------------------------------------------------------
 //		$path = '/secure/'.$_FILES['userfile']['name'];
-		$path = '/secure/' . StripEx($file_info['filename_hashed']) . $ext;
+		$path = '/secure/' . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];
 		$expire = time() + (86400 * $_POST['exp']);					// Calculate expire date
 		
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
