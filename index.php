@@ -2,12 +2,15 @@
 $debug = false;							// Debug flag
 $rand = true;							// Generate random passwords?
 $pass_l = 15;
+$sfx = false;
 
 // Reset vars
 $error = false;
 $message = "";
 $debug_info = array();
 $file_info = array();
+if($sfx){ $ext = '.exe'; } else { $ext = '.7z'; }
+$option = '';
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
@@ -37,9 +40,16 @@ function StripEx($filename) {
 }
 
 // Pack to 7zip with password
-function RePack($arc, $file, $pass) {
+function RePack($arc, $file, $pass, $sfx) {
 	// Archiving file
-	$ret = exec('LC_CTYPE=ru_RU.UTF-8 7za a -t7z -p' . $pass . ' -mhe=on "'. addslashes(StripEx($file)) . '.7z" "' . addslashes($arc) . '"');
+	if ($sfx) {
+		$option = '-sfx';
+		$ext = '.exe';
+	} else {
+		$ext = '.7z';
+	}
+	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a -p' . $pass . ' -mhe=on '. $option . ' "' . addslashes(StripEx($file)) . $ext . '" "' . addslashes($arc) . '"';
+	$ret = exec($cmd);
 
 	// If everything is ok - delete original file
 	if ( preg_match('/Ok/', $ret) ) {
@@ -73,7 +83,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			
 			if ($debug) { $debug_info["uploadfile"] = $uploadfile; $debug_info["pass"] = $arc_pass; }
 			
-			if (Repack($file_info['filename_upload'], $file_info['arc_upload_h'], $arc_pass) ) {
+			if (Repack($file_info['filename_upload'], $file_info['arc_upload_h'], $arc_pass, $sfx) ) {
 				$message = '<div class="success-msg">Файл корректен и был успешно загружен.</div>'."\n";
 			} else {
 				$error = true;
@@ -86,7 +96,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 
 // CREATE SECURE LINK -------------------------------------------------------------------------------
 //		$path = '/secure/'.$_FILES['userfile']['name'];
-		$path = '/secure/' . StripEx($file_info['filename_hashed']) . '.7z';
+		$path = '/secure/' . StripEx($file_info['filename_hashed']) . $ext;
 		$expire = time() + (86400 * $_POST['exp']);					// Calculate expire date
 		
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
