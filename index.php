@@ -1,6 +1,6 @@
 <?php
 $debug = false;							// Debug flag
-$rand = false;							// Generate random passwords?
+$rand = true;							// Generate random passwords?
 $pass_l = 15;
 
 // Reset vars
@@ -11,8 +11,7 @@ $file_info = array();
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 $ip = $_SERVER['REMOTE_ADDR'];
-//$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
-$allowed = true;
+$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
 // -------------------------------------------------------------------------------------------------
 
 setlocale(LC_CTYPE, 'ru_RU.UTF-8');		// For suppord non-en filenames
@@ -110,16 +109,14 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 </head>
 <body>
 	<div id="container">
-		<div id="message" style="visibility: <?php echo $message ? 'visible' : 'hidden'; ?>">
-			<?php echo $message; ?>
-		</div>
+		<div id="message" style="visibility: <?php echo $message ? 'visible' : 'hidden'; ?>"><?php echo $message; ?></div>
 		
 		<div id="logo">
 			<a href="/sec/"><img src="sec_lock.png" alt="Secure Link" /></a>
 			<h1>Генератор защищенных ссылок</h1>
 		</div>
 
-		<div id="uploader">
+		<div class="block">
 <?php
 		// CHECK ACCESS ----------------------------------------------------------------------------
 		if (!$allowed) {
@@ -134,7 +131,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 				<label for="exp">Время жизни файла (дней): </label><input maxlength="3" size="1" id="exp" name="exp" class="solid" value="1"><br><br>
 				<input id="btn-create" type="submit" value="Создать ссылку" />
 			</form>
-			<div id="links">
+			<div class="block">
 <?php
 		// PRINT SECURE LINK AND EXPIRE DATE ---------------------------------------------------------------
 		if ($debug) {
@@ -148,10 +145,12 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		if ($md5 && $expire && !$error) {
 			$sec_link = 'https://f.medkirov.ru'.$path.'?st='.$md5.'&e='.$expire;
 
-			echo '<input onclick="this.select();" class="solid" readonly="readonly" style="width:100%" value="'.$sec_link.'"><br>'."\n";
-			echo '<br><center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>'."\n";
-			echo '<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>'."<br>\n";
-			echo '<div id="pass">Пароль на архив: <b>' . $arc_pass . "</b></div>\n";
+			echo
+"				<br>\n" .
+'				<input onclick="this.select();" style="width:392px" class="solid" readonly="readonly" value="'.$sec_link.'"><br><br>'."\n" . 
+'				<center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>'."\n" . 
+'				<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>'."<br>\n" . 
+'				<div id="pass">Пароль на архив: <b>' . $arc_pass . "</b></div>\n";
 		}
 // -------------------------------------------------------------------------------------------------
 ?>

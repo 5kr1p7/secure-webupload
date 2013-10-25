@@ -2,7 +2,7 @@ body {
 	margin: 0px;
 	background-color: #222;
 	color: #ccc;
-	font: 14pt;
+	font-size: 14pt;
 }
 
 img {
@@ -23,12 +23,11 @@ img {
 	margin-right: auto;
 }
 
-#uploader {
+.block {
 	width: 400px;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: right;
-//	border: 2px solid #fff;
 }
 
 #btn-create {
@@ -95,4 +94,9 @@ h1 {
 	margin-top: -3em;
 	text-align: right;
 	margin-right: 15px;
+}
+
+#pass b {
+	font: 20pt sans-serif;
+	color: #fff;
 }
