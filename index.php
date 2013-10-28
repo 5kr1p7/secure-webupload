@@ -15,12 +15,14 @@ $max_file_size = 15 * 1048576;			// Max file size (MB)
 $secret = 'Rh47mf3';					// Salt
 $public = false;						// No restricted access
 $onlyhash = true;						// Delete original filename
+$password = true;						// Password protect
 
 // Reset vars
 $error = false;
 $message = '';
 $debug_info = array();
 $file_info = array();
+$arc_pass = '';
 
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 if (!$public) {
@@ -66,16 +68,20 @@ function StripEx($filename) {
 }
 
 // Pack to 7zip with password
-function RePack($arc, $file, $pass) {
+function RePack($arc, $file, $pass = '') {
 	global $file_info, $sfx;
 	$option = '';
 
 	// Archiving file
 	if ($file_info['arc_sfx']) {
-		$option = '-sfx';
+		$option = '-sfx ';
+	}
+	
+	if ($pass) {
+		$option = $option . '-p' . $pass;
 	}
 
-	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a -p' . $pass . ' -mhe=on '. $option . ' "' . addslashes($file_info['arc_upload_h']) . '" "' . addslashes($file_info['filename_upload']) . '"';
+	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a  -mhe=on '. $option . ' "' . addslashes($file_info['arc_upload_h']) . '" "' . addslashes($file_info['filename_upload']) . '"';
 	$ret = exec($cmd);
 
 	// If everything is ok - delete original file
@@ -119,10 +125,12 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
 		
 		if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-			if($rand){
-				$arc_pass = GenRandomPass($pass_l);
-			} else {
-				$arc_pass = substr( filesize($uploadfile) . preg_replace('/[^0-9]/i', '', md5($uploadfile)), 0, $pass_l );
+			if ($password) {
+				if ($rand){
+					$arc_pass = GenRandomPass($pass_l);
+				} else {
+					$arc_pass = substr( filesize($uploadfile) . preg_replace('/[^0-9]/i', '', md5($uploadfile)), 0, $pass_l );
+				}
 			}
 			
 			if ($debug) { $debug_info["uploadfile"] = $uploadfile; $debug_info["pass"] = $arc_pass; }
@@ -200,11 +208,14 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 			$sec_link = 'https://f.medkirov.ru'.$path.'?st='.$md5.'&e='.$expire;
 
 			echo
-"				<br>\n" .
-'				<input onclick="this.select();" style="width:392px" class="solid" readonly="readonly" value="'.$sec_link.'"><br><br>'."\n" . 
-'				<center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>'."\n" . 
-'				<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>'."<br>\n" . 
-'				<div id="pass">Пароль на архив: <b>' . NicePassOutput($arc_pass) . "</b></div>\n";
+"				<br>\n" . 
+'				<input onclick="this.select();" style="width:392px" class="solid" readonly="readonly" value="'.$sec_link.'"><br><br>' . "\n" . 
+'				<center><a target="_blank" href="' . $sec_link . '"\">Открыть защищенную ссылку</a></center><br>' . "\n" . 
+'				<div id="exp-date">Ссылка будет работать до: <b>'.date('d.m.Y H:i:s',$expire+14400).'</b></div>' . "<br>\n";
+
+			if ($password) {
+				echo '				<div id="pass">Пароль на архив: <b>' . NicePassOutput($arc_pass) . "</b></div>\n";
+			}
 		}
 // -------------------------------------------------------------------------------------------------
 ?>
