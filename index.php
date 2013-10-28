@@ -71,6 +71,7 @@ function RePack($arc, $file, $pass) {
 	// If everything is ok - delete original file
 	if ( preg_match('/Ok/', $ret) ) {
 		unlink($arc);
+		touch($file_info['arc_upload_h'], $file_info['expire']);
 		return true;
 	} else {
 		return false;
@@ -84,16 +85,17 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 // UPLOAD PROCESS -----------------------------------------------------------------------------------
 		// Array with info
 		if ($sfx) {
-			$file_info['arc_ext'] = '.exe';
+			$file_info['arc_ext'] = '.exe';				// Archive extension
 		} else {
-			$file_info['arc_ext'] = '.7z';
+			$file_info['arc_ext'] = '.7z';				// Archive extension
 		}
 
-		$file_info['arc_sfx'] = $sfx;
-		$file_info['filename_original']	= basename($_FILES['userfile']['name']);
-		$file_info['filename_hashed']	= AddHashFilename(basename($_FILES['userfile']['name']));
-		$file_info['filename_upload']	= $uploaddir . basename($_FILES['userfile']['name']);
-		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];
+		$file_info['arc_sfx'] = $sfx;																					// SFX flag
+		$file_info['filename_original']	= basename($_FILES['userfile']['name']);										// Original filename
+		$file_info['filename_hashed']	= AddHashFilename(basename($_FILES['userfile']['name']));						// Filename with hash
+		$file_info['filename_upload']	= $uploaddir . basename($_FILES['userfile']['name']);							// Path of original file
+		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];		// Path of archive
+		$file_info['expire'] = time() + ($_POST['exp'] * 86400);														// Calculate expire
 		// ------------------------------------------------------------------------------------------
 
 		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
@@ -121,7 +123,7 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 // CREATE SECURE LINK -------------------------------------------------------------------------------
 //		$path = '/secure/'.$_FILES['userfile']['name'];
 		$path = '/secure/' . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];
-		$expire = time() + (86400 * $_POST['exp']);					// Calculate expire date
+		$expire = $file_info['expire'];
 		
 		$md5 = base64_encode(md5($secret . $path . $expire, true));
 		$md5 = strtr($md5, '+/', '-_');
