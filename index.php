@@ -1,4 +1,9 @@
 <?php
+/**********************************************************************
+      					SECURE LINK SERVICE
+-----------------------------------------------------------------------
+Author: Alexander Shangin <5kr1p7@gmail.com>    Special for KOGBUZ MIAC
+***********************************************************************/
 
 $debug = false;							// Debug flag
 $rand = true;							// Generate random passwords?
