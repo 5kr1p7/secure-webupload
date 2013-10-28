@@ -1,12 +1,14 @@
 <?php
+
 $debug = false;							// Debug flag
 $rand = true;							// Generate random passwords?
-$pass_l = 15;
-$sfx = false;
-$uploaddir = '/srv/ftp/www/secure/';
+$pass_l = 15;							// Password length
+$sfx = false;							// SFX archive flag
+$uploaddir = '/srv/ftp/www/secure/';	// Directory for upload files
 $max_file_size = 15 * 1048576;			// Max file size (MB)
 $secret = 'Rh47mf3';					// Salt
-$public = false;
+$public = false;						// No restricted access
+$onlyhash = true;						// Delete original filename
 
 // Reset vars
 $error = false;
@@ -93,9 +95,17 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		$file_info['arc_sfx'] = $sfx;																					// SFX flag
 		$file_info['filename_original']	= basename($_FILES['userfile']['name']);										// Original filename
 		$file_info['filename_hashed']	= AddHashFilename(basename($_FILES['userfile']['name']));						// Filename with hash
+
+		// If we need only hash		
+		if ($onlyhash) {
+			$file_info['filename_hashed'] = str_replace('-'.$file_info['filename_original'], '', $file_info['filename_hashed']);
+		}
+		
 		$file_info['filename_upload']	= $uploaddir . basename($_FILES['userfile']['name']);							// Path of original file
 		$file_info['arc_upload_h']	= $uploaddir . StripEx($file_info['filename_hashed']) . $file_info['arc_ext'];		// Path of archive
 		$file_info['expire'] = time() + ($_POST['exp'] * 86400);														// Calculate expire
+		
+
 		// ------------------------------------------------------------------------------------------
 
 		$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
