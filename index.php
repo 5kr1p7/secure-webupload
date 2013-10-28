@@ -3,6 +3,7 @@
 $debug = false;							// Debug flag
 $rand = true;							// Generate random passwords?
 $pass_l = 15;							// Password length
+$hash_l = 6;							// Length of hash code
 $sfx = false;							// SFX archive flag
 $uploaddir = '/srv/ftp/www/secure/';	// Directory for upload files
 $max_file_size = 15 * 1048576;			// Max file size (MB)
@@ -42,7 +43,9 @@ function NicePassOutput($pass) {
 
 // Add a numeric appendix to filename
 function AddHashFilename($filename) {
-	return substr_replace($filename, rand(10000,99999).'-', 0, 0);
+	global $hash_l;
+
+	return substr_replace($filename, rand(pow(10, $hash_l) / 10, pow(10, $hash_l) - 1).'-', 0, 0);
 }
 
 // Generate Password
