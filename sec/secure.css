@@ -105,3 +105,8 @@ h1 {
 .pass_block {
 	padding: 0 0.15em;
 }
+
+//--------------- Progress bar -----------------
+.progress { position:relative; width:100%; border: 1px solid #ddd; padding: 1px; }
+.bar { background-color: #080; width:0%; height:20px; }
+.percent { position:absolute; display: inline-block; left:49%; margin-top: -19px; }

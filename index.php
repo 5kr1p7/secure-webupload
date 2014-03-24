@@ -11,7 +11,7 @@ $pass_l = 15;							// Password length
 $hash_l = 6;							// Length of hash code
 $sfx = false;							// SFX archive flag
 $uploaddir = '/srv/ftp/www/secure/';	// Directory for upload files
-$max_file_size = 15 * 1048576;			// Max file size (MB)
+$max_file_size = 1024 * 1048576;		// Max file size (MB)
 $secret = 'Rh47mf3';					// Salt
 $public = false;						// No restricted access
 $onlyhash = true;						// Delete original filename
@@ -27,7 +27,8 @@ $arc_pass = '';
 // RESTRICT ACCESS ---------------------------------------------------------------------------------
 if (!$public) {
 	$ip = $_SERVER['REMOTE_ADDR'];
-	$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+//	$allowed = preg_match("/^192\.168\.1\..*$/", $ip);
+	$allowed = true;
 } else {
 	$allowed = true;
 }
@@ -81,7 +82,7 @@ function RePack($arc, $file, $pass = '') {
 		$option = $option . '-p' . $pass;
 	}
 
-	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a  -mhe=on '. $option . ' "' . addslashes($file_info['arc_upload_h']) . '" "' . addslashes($file_info['filename_upload']) . '"';
+	$cmd = 'LC_CTYPE=ru_RU.UTF-8 7za a -mx0 -mhe=on '. $option . ' "' . addslashes($file_info['arc_upload_h']) . '" "' . addslashes($file_info['filename_upload']) . '"';
 	$ret = exec($cmd);
 
 	// If everything is ok - delete original file
@@ -168,6 +169,8 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
 	<title>Генератор безопасных ссылок</title>
 	<link rel="stylesheet" href="secure.css">
+	<script src="jquery.js"></script>
+	<script src="jquery.form.js"></script>
 </head>
 <body>
 	<div id="container">
@@ -193,6 +196,12 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 				<label for="exp">Время жизни файла (дней): </label><input maxlength="3" size="1" id="exp" name="exp" class="solid" value="1"><br><br>
 				<input id="btn-create" type="submit" value="Создать ссылку" />
 			</form>
+			<br>
+    <div class="progress">
+        <div class="bar"></div>
+        <div class="percent">0%</div>
+    </div>
+
 			<div class="block">
 <?php
 		// PRINT SECURE LINK AND EXPIRE DATE ---------------------------------------------------------------
@@ -219,10 +228,46 @@ if($_POST['MAX_FILE_SIZE'] && $allowed) {
 		}
 // -------------------------------------------------------------------------------------------------
 ?>
+
 			</div>
 		</div>
-
-
 	</div>
+
+<script>
+(function() {
+    
+var progress = $('.progress')
+var bar = $('.bar');
+var percent = $('.percent');
+var container = $('#container');
+
+progress.hide();
+
+$('form').ajaxForm({
+    beforeSend: function() {
+		progress.show();
+        var percentVal = '0%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+    },
+    uploadProgress: function(event, position, total, percentComplete) {
+        var percentVal = percentComplete + '%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+    },
+    success: function() {
+        var percentVal = '100%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+    },
+	complete: function(xhr) {
+		progress.hide();
+		container.html(xhr.responseText);
+	}
+});
+
+})();       
+</script>
+
 </body>
 </html>
